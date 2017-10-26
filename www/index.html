@@ -13,12 +13,69 @@
   <link rel="stylesheet" href="css/style.css">
 
   <script>
-    ons.ready(function() {
-      console.log("Onsen UI is ready!");
-    });
+    var question; //問題データ
+    $.getJSON('data.json', function(result){
+     question = result;
+    })
+    
+    var current;
+    var questions=1;
+    var log = [];
+    
+    function start(){
+        current = 0;
+        questions=1;
+        
+        //問題ページ(question.html)に遷移する
+        document.getElementById("navi").pushPage("shindan.html");
+    }
+    document.addEventListener('init',function(event){
+        var page = event.target;    //event.targetどのぺージが開かれたか
+        if(page.id == "shindan-page"){  
+            //jsonのデータをページにセットする
+            page.querySelector('#title').innerHTML = question[current].title;;  
+            page.querySelector('#btn1').innerHTML = question[current].choice1;
+            page.querySelector('#btn2').innerHTML = question[current].choice2;
+            page.querySelector('#btn3').innerHTML = "戻る";
+            page.querySelector('#toolbar').innerHTML = questions+"問目";
+            questions++;
+        }else if(page.id == "result"){
+            
+            $("#return").on("click",function(){
+                document.getElementById("navi").resetToPage("top.html");    
+            })
+            
+        }
+    })
+    function select(Select){
+        log.push(current);
+        console.log("currentの型: " +  typeof current);
+        
+        if(Select==1){
+            current=question[current].result1;
+        }else{
+            current = question[current].result2;
+        }
+        
+        var next = typeof current;
+        console.log("next : "+next);
+        console.log(current)
+        if(next=="number"){
+            document.getElementById("navi").pushPage("shindan.html", { animation: "fade" });
+        }else{
+            document.getElementById("navi").pushPage("result.html", { animation: "lift" }).then(function(page){
+                page.querySelector('#result').innerHTML = "あなたは"+current +"タイプです。";
+            })
+        }
+    }
+    function back(){    
+        document.getElementById("navi").popPage();
+        current = log.pop();
+        questions--;
+    }
   </script>
 </head>
 <body>
-  This is a template for Onsen UI app.
+    <ons-navigator id="navi" page="top.html"></ons-navigator>
 </body>
 </html>
